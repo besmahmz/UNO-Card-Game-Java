@@ -17,6 +17,12 @@ public class Card {
     }
 
     // Constructor for special cards (e.g., +2, +4)
+    
+    public Card(SpecialType specialType, String color) {
+        this.specialType = specialType;
+        this.color = color;
+        this.value = 0; // Special cards don't have a value
+    }
     public Card(SpecialType specialType) {
         this.color = "";
         this.value = 0;
@@ -36,26 +42,23 @@ public class Card {
     }
 
     public String toString() {
-        // Creates the visual representation of the card
         String[] card = {" ----- ", "|     |", "|     |", " ----- "};
         String cardDetails = "";
 
         for (int i = 0; i < card.length; i++) {
-            for (int j = 0; j < 1; j++) {
-                if (this.specialType == SpecialType.NONE) {
-                    if (i == 1) {
-                        cardDetails += "| " + this.getColor() + " |" + " ";
-                    } else if (i == 2) {
-                        cardDetails += "|  " + this.getValue() + "  |" + " ";
-                    } else {
-                        cardDetails += card[i] + " ";
-                    }
+            if (this.specialType == SpecialType.NONE) {
+                if (i == 1) {
+                    cardDetails += "| " + this.getColor() + " |";  // Show color for normal cards
+                } else if (i == 2) {
+                    cardDetails += "|  " + this.getValue() + "  |";
                 } else {
-                    if (i == 1) {
-                        cardDetails += "| " + getSpecialCardText() + " |" + " ";
-                    } else {
-                        cardDetails += card[i] + " ";
-                    }
+                    cardDetails += card[i];
+                }
+            } else {
+                if (i == 1) {
+                    cardDetails += "| " + this.getColor() + " " + getSpecialCardText() + " |";  // Show color for special cards
+                } else {
+                    cardDetails += card[i];
                 }
             }
             cardDetails += "\n";
@@ -64,11 +67,12 @@ public class Card {
         return cardDetails;
     }
 
+
     public boolean isSpecial() {
         return this.specialType != SpecialType.NONE;
     }
 
-    private String getSpecialCardText() {
+    public String getSpecialCardText() {
         // Returns the string representation for special cards
         switch (this.specialType) {
             case DRAW_TWO:
@@ -76,13 +80,13 @@ public class Card {
             case DRAW_FOUR:
                 return "+4";
             case SKIP:
-                return "Skip";
+                return "Skp";
             case REVERSE:
-                return "Reverse";
+                return "Rvs";
             case WILD:
-                return "Wild";
+                return "+2";
             case WILD_DRAW_FOUR:
-                return "Wild +4";
+                return " +4";
             default:
                 return "Unknown";
         }
