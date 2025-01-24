@@ -70,22 +70,24 @@ public class Player {
          * Just to make cards look more like cards, used in showboard() method in Uno class
          */
         
-        String[] card = {" ----- ", "|     |", "|     |", " ----- "};
+        String[] card = {" ------ ", "|      |", "|      |", " ------ "};
         String c = "";
 
         for (int i = 0; i < card.length; i++) {
             for (int j = 0; j < playercards.size(); j++) {
                 if (!playercards.get(j).isSpecial()) {
                     if (i == 1) {
-                        c = c + "| " + playercards.get(j).getColor() + " |" + " ";
+                        c = c + "|  " + playercards.get(j).getColor() + " |" + " ";
                     } else if (i == 2) {
-                        c = c + "|  " + playercards.get(j).getValue() + "  |" + " ";
+                        c = c + "|   " + playercards.get(j).getValue() + "  |" + " ";
                     } else {
                         c = c + card[i] + " "; 
                     }
-                } else if (playercards.get(j).isSpecial()) {
+                } else {
                     if (i == 1) {
-                        c = c + "| " + "+" + playercards.get(j).getValue() + "  |" + " ";
+                        c = c + "|  " + playercards.get(j).getColor() + " |" + " ";
+                    } else if (i == 2) {
+                        c = c + "|  " + playercards.get(j).getSpecialCardText() + " |" + " ";
                     } else {
                         c = c + card[i] + " ";
                     }
@@ -96,6 +98,9 @@ public class Player {
 
         System.out.print(c);
     }
+
+
+
 
     public void hideCards() {
         /*
