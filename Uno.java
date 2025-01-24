@@ -48,25 +48,65 @@ public class Uno {
                 }
             }
         }
-        // Distribute cards to players
-        distributecards();
+ 
 		
 	
 	}
 	
-	 public void game() {
-	        int turn = 0;
-	        while (!gameOver()) {
-	            Player currentPlayer = players.get(turn % players.size()); // Get the current player
-	            
-	            if (currentPlayer.isAutomated()) {
-	                playAutomatedGame(currentPlayer);
-	            } else {
-	                playGame(currentPlayer);
-	            }
-	            turn++;
+	public void dealCards() {
+	    int cardsPerPlayer = 7;
+	    for (Player player : players) { 
+	        for (int i = 0; i < cardsPerPlayer; i++) {
+	            player.pickCards(deck.getTopCard()); // Give a card to the player
 	        }
 	    }
+	}
+	
+	public void game() {
+	    dealCards();
+	    int turn = 0;
+	    boolean reverseOrder = false;
+
+	    while (!gameOver()) {
+	        Player currentPlayer = players.get(turn % players.size());
+
+	        if (currentPlayer.isAutomated()) {
+	            playAutomatedGame(currentPlayer);
+	        } else {
+	            playGame(currentPlayer);
+	        }
+
+	        // Handle special cards after each player's turn
+	        if (current.getSpecialType() == Card.SpecialType.SKIP) {
+	            turn = (turn + 1) % players.size();  // Skip next player
+	        }
+
+	        if (current.getSpecialType() == Card.SpecialType.REVERSE) {
+	            reverseOrder = !reverseOrder;  // Reverse the turn order
+	        }
+
+	        if (current.getSpecialType() == Card.SpecialType.DRAW_TWO) {
+	            drawCard(players.get((turn + 1) % players.size()));
+	            drawCard(players.get((turn + 1) % players.size()));
+	        }
+
+	        if (current.getSpecialType() == Card.SpecialType.DRAW_FOUR) {
+	            drawCard(players.get((turn + 1) % players.size()));
+	            drawCard(players.get((turn + 1) % players.size()));
+	            drawCard(players.get((turn + 1) % players.size()));
+	            drawCard(players.get((turn + 1) % players.size()));
+	        }
+
+	        // Adjust turn direction based on reverseOrder
+	        if (reverseOrder) {
+	            turn = (turn - 1 + players.size()) % players.size();  // Reverse order
+	        } else {
+	            turn = (turn + 1) % players.size();  // Normal order
+	        }
+	    }
+	}
+
+
 	
 	
 	 public void drawCard(Player p) {
@@ -78,93 +118,109 @@ public class Uno {
 		}
 
 	
-	private void distributecards() {
-        // this method distributes cards to the players
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < players.size(); j++) {
-                players.get(j).pickCards(deck.getTopCard());
-            }
-        }
-    }
-	
-	
-	
-	private void playGame(Player p) {
-        // method for human player turn (similar to the previous playGame method)
-        decorate();
-        System.out.println(p + ", It is your turn\nThe current card on play is:\n" + current);
-        decorate();
-        showBoard(p);
-        decorate();
 
-       
-     // Check if the player has a valid card to play
-        if (!hasPlayableCard(p)) {
-            System.out.println("You don't have any valid card to play, so you must draw a card.");
-            drawCard(p);  // Call the new drawCard method to handle the drawing process
-            
-            // After drawing, show player's cards and recheck if they can play
-            System.out.println("You have the following cards:");
-            p.showCards();
-            return; // Skip the rest of the method as the player cannot continue until they have a valid card
-        }
 
-        
-        System.out.println("Please pick a card:");
-        int pick = choice.nextInt() - 1;  // Input card selection
-        
-        while (!isValidChoice(p, pick)) {
-            System.out.println("Invalid pick. Please pick a valid card.");
-            pick = choice.nextInt() - 1;
-        
-        Card play = p.throwCard(pick);
-        p.sayUno();
-        current = play;
-        cardpile.add(current);
-        reviveDeck();
-        }
-    }
+	
+	
+	
+	 private void playGame(Player p) {
+		    decorate();
+		    System.out.println(p + ", It is your turn\nThe current card on play is:\n" + current);
+		    decorate();
+		    showBoard(p);
+		    decorate();
+
+		    // Check if the player has any playable cards
+		    if (!hasPlayableCard(p)) {
+		        System.out.println("You don't have any valid cards to play, drawing a card...");
+		        drawCard(p);
+		        System.out.println("Your new hand:");
+		        p.showCards();
+
+		        // After drawing, check if the new card is playable
+		        if (!hasPlayableCard(p)) {
+		            System.out.println("The drawn card is also not playable. Your turn is skipped.");
+		            return;
+		        } else {
+		            System.out.println("You now have a playable card.");
+		        }
+		    }
+
+		    // Continue the player's turn to select a valid card
+		    System.out.println("Please pick a card:");
+		    int pick = choice.nextInt() - 1;
+
+		    while (!isValidChoice(p, pick)) {
+		        System.out.println("Invalid pick. Please pick a valid card.");
+		        pick = choice.nextInt() - 1;
+		    }
+
+		    Card play = p.throwCard(pick);
+		    p.sayUno();
+		    current = play;
+		    cardpile.add(current);
+		    reviveDeck();
+		}
+
+
+
 	private void playAutomatedGame(Player p) {
-        // method for automated player turn
-        System.out.println(p + " (AI), It is your turn\nThe current card on play is:\n" + current);
-        pause();
-        decorate();
-        showBoard(p);
-        decorate();
+	    System.out.println(p + " (AI), It is your turn\nThe current card on play is:\n" + current);
+	    pause();
+	    decorate();
+	    showBoard(p);
+	    decorate();
 
-        // Automated player simply chooses a valid card randomly from its hand
-        ArrayList<Card> validCards = new ArrayList<>();
-        for (Card card : p.PlayerCards()) {
-            if (card.getColor().equals(current.getColor()) || card.getValue() == current.getValue() || card.isSpecial()) {
-                validCards.add(card);
-            }
-        }
+	    // Separate valid number and special cards
+	    ArrayList<Card> validNumberCards = new ArrayList<>();
+	    ArrayList<Card> validSpecialCards = new ArrayList<>();
 
-        if (validCards.isEmpty()) {
-            // If no valid cards, draw a card
-            drawCard(p);  // Call the new drawCard method to handle the drawing process
-        } else {
-            // Play a random valid card
-            Random rand = new Random();
-            Card play = validCards.get(rand.nextInt(validCards.size()));
-            p.throwCard(p.PlayerCards().indexOf(play));
-            System.out.println(p + " (AI) played: " + play);
-            current = play;
-            cardpile.add(current);
-        }
+	    for (Card card : p.PlayerCards()) {
+	        if (card.getColor().equals(current.getColor()) || card.getValue() == current.getValue()) {
+	            validNumberCards.add(card);  // Prefer number cards
+	        } else if (card.isSpecial()) {
+	            validSpecialCards.add(card);  // Consider special cards only if needed
+	        }
+	    }
 
+	    if (!validNumberCards.isEmpty()) {
+	        // Prefer playing a number card if possible
+	        Card play = validNumberCards.get(new Random().nextInt(validNumberCards.size()));
+	        p.throwCard(p.PlayerCards().indexOf(play));
+	        System.out.println(p + " (AI) played: " + play);
+	        current = play;
+	    } else if (!validSpecialCards.isEmpty()) {
+	        // Play a special card only if no number card is available
+	        Card play = validSpecialCards.get(new Random().nextInt(validSpecialCards.size()));
+	        p.throwCard(p.PlayerCards().indexOf(play));
+	        System.out.println(p + " (AI) played: " + play);
+	        current = play;
+	    } else {
+	        // No valid card, draw one
+	        drawCard(p);
+	    }
 
-        reviveDeck();
-    }
+	    cardpile.add(current);
+	    reviveDeck();
+	}
+
 	
-	private boolean hasPlayableCard(Player p) {
+	
+	
+	public boolean hasPlayableCard(Player p) {
 	    for (Card c : p.PlayerCards()) {
-	        if (c.getColor().equals(current.getColor()) || c.getValue() == current.getValue() || c.isSpecial()) {
+	        if (c.getColor().equals(current.getColor()) || 
+	            c.getValue() == current.getValue() || 
+	            c.isSpecial() || 
+	            (c.getSpecialType() == Card.SpecialType.WILD || c.getSpecialType() == Card.SpecialType.WILD_DRAW_FOUR)) {
 	            return true;
 	        }
 	    }
 	    return false;
 	}
+
+
+
 	
 	public void reviveDeck() {
 	    // If the deck is empty, revive it by shuffling the discard pile back into the deck.
@@ -193,22 +249,28 @@ public class Uno {
 	}
 
 	private boolean isValidChoice(Player p, int choice) {
-	    /*
-	     * checks if the user selection was a valid choice or not
-	     * to be a valid choice: the player must have the card, the card must be either the same color or value as the current card(card in play/previously played card)
-	     */
 	    if (choice < 0 || choice >= p.PlayerCards().size()) {
+	        System.out.println("Invalid choice: " + choice);
 	        return false;
 	    }
-	    
+
 	    Card selectedCard = p.PlayerCards().get(choice);
+	    
+
+	    if (selectedCard.isSpecial()) {
+	        System.out.println("Checking special card validity...");
+	        if (selectedCard.getColor().equals(current.getColor()) || selectedCard.getSpecialCardText().equals(current.getSpecialCardText())) {
+	            return true;
+	        } else {
+	            return false;
+	        }
+	    }
+
 	    return selectedCard.getColor().equals(current.getColor()) || 
-	           selectedCard.getValue() == current.getValue() || 
-	           selectedCard.isSpecial();
+	           selectedCard.getValue() == current.getValue();
 	}
 
-	
-	
+
 	private void pause() {
 		/*
 		 * creates a pause
