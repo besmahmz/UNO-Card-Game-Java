@@ -27,20 +27,21 @@ public class Deck {
 	    }
 	    
 	    // Adding special cards to the deck
-	    for (int i : specialnumbers) {
-	        // Use the SpecialType enum for special cards (e.g., +2, +4)
-	        if (i == 2) {
-	            deck.add(new Card(Card.SpecialType.DRAW_TWO)); // Adding +2 cards
-	        } else if (i == 4) {
-	            deck.add(new Card(Card.SpecialType.DRAW_FOUR)); // Adding +4 cards
-	        }
+	    for (String color : colors) {
+	        deck.add(new Card(Card.SpecialType.SKIP, color));  // Adding 2 SKIP cards per color
+	        deck.add(new Card(Card.SpecialType.REVERSE, color)); // Adding 2 REVERSE cards per color
+	        deck.add(new Card(Card.SpecialType.DRAW_TWO, color)); // Adding 2 +2 cards per color
 	    }
+
+	    // Adding one WILD and one WILD_DRAW_FOUR card to the deck
+	    deck.add(new Card(Card.SpecialType.WILD)); // Adding 1 WILD card
+	    deck.add(new Card(Card.SpecialType.DRAW_FOUR)); // Adding 1 +4 card
 	}
 
 	
 	public Deck(ArrayList<Card> c) { //overloaded constructor
 		/*
-		 * incase the current deck becomes empty, all the thrown cards are collected and it becomes the new deck;
+		 * in case the current deck becomes empty, all the thrown cards are collected and it becomes the new deck;
 		 * 
 		 */
 		deck = c;
