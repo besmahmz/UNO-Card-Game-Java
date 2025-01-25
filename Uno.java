@@ -40,13 +40,11 @@ public class Uno {
         }
         // Ask if the players should be automated
         for (int i = 1; i < numPlayers; i++) { // Start from player 2
-            if (i == 1) { // You can make this more flexible if needed
                 System.out.println("Do you want Player " + (i + 1) + " to be automated? (yes/no)");
                 String response = choice.nextLine();
                 if (response.equalsIgnoreCase("yes")) {
                     players.get(i).setAutomated(true); // Set Player i to automated
                 }
-            }
         }
  
 		
@@ -210,10 +208,10 @@ public class Uno {
 	public boolean hasPlayableCard(Player p) {
 	    for (Card c : p.PlayerCards()) {
 	        if (c.getColor().equals(current.getColor()) || 
-	            c.getValue() == current.getValue() || 
-	            c.isSpecial() || 
-	            (c.getSpecialType() == Card.SpecialType.WILD || c.getSpecialType() == Card.SpecialType.WILD_DRAW_FOUR)) {
-	            return true;
+	            c.getValue() == current.getValue() ||
+	            c.getSpecialType() == Card.SpecialType.WILD ||
+				c.getSpecialType() == Card.SpecialType.WILD_DRAW_FOUR) {
+	            	return true;
 	        }
 	    }
 	    return false;

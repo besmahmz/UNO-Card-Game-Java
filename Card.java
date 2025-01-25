@@ -19,9 +19,9 @@ public class Card {
     // Constructor for special cards (e.g., +2, +4)
     
     public Card(SpecialType specialType, String color) {
-        this.specialType = specialType;
         this.color = color;
         this.value = 0; // Special cards don't have a value
+        this.specialType = specialType;
     }
     public Card(SpecialType specialType) {
         this.color = "";
